@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAKSHYANISCHAY Source Code Extractor</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6d5dfc, #c04848);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+            transition: 0.3s ease;
+        }
+        .container:hover {
+            transform: translateY(-10px);
+        }
+        header {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border-radius: 50px;
+            border: none;
+            outline: none;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #333;
+            background-color: #fff;
+        }
+        input[type="text"]::placeholder {
+            color: #aaa;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #5a67d8;
+            border: none;
+            padding: 15px 30px;
+            color: white;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            width: 30%;
+        }
+        button:hover {
+            background-color: #434190;
+            transform: scale(1.05);
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: #f7fafc;
+            color: #333;
+            font-family: monospace;
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+            resize: none;
+        }
+        #progressBarContainer {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        #progressBar {
+            width: 0;
+            height: 20px;
+            background-color: #48bb78;
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+        #progressPercentage {
+            margin-top: 10px;
+        }
+        footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: #edf2f7;
+            text-decoration: none;
+        }
+        .error {
+            color: #f56565;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>LAKSHYANISCHAY Extractor Tool</header>
+        <input type="text" id="urlInput" placeholder="Paste the link here...">
+        <div class="buttons">
+            <button onclick="fetchSourceCode()">Fetch</button>
+            <button onclick="copyToClipboard()">Copy All</button>
+            <button onclick="downloadSourceCode()">Download</button>
+        </div>
+        <textarea id="sourceCodeArea" readonly placeholder="Source code will appear here..."></textarea>
+        <div id="progressBarContainer">
+            <div id="progressBar"></div>
+        </div>
+        <p id="progressPercentage">0%</p>
+        <p id="errorMessage" class="error"></p>
+        <footer>©️ LAKSHYANISCHAY 2024-25 | Follow 🤳 <a href="https://t.me/currentaffairsupdatz" target="_blank">Telegram</a></footer>
+    </div>
+
+    <script>
+        function simulateProgressBar() {
+            let progressBar = document.getElementById("progressBar");
+            let progressPercentage = document.getElementById("progressPercentage");
+            let width = 0;
+            let interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                } else {
+                    width += 10;
+                    progressBar.style.width = width + "%";
+                    progressPercentage.textContent = width + "%";
+                }
+            }, 400);
+        }
+
+        function fetchSourceCode() {
+            const url = document.getElementById('urlInput').value;
+            const progressBar = document.getElementById('progressBar');
+            const errorMessage = document.getElementById('errorMessage');
+            const sourceCodeArea = document.getElementById('sourceCodeArea');
+            const progressPercentage = document.getElementById('progressPercentage');
+            
+            errorMessage.textContent = ''; 
+            sourceCodeArea.value = ''; 
+            progressBar.style.width = '0%'; 
+            progressPercentage.textContent = '0%'; 
+
+            if (!url) {
+                errorMessage.textContent = "Please enter a valid URL.";
+                return;
+            }
+
+            simulateProgressBar();
+
+            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch data");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    sourceCodeArea.value = data.contents;
+                    progressBar.style.width = '100%';
+                    progressPercentage.textContent = '100%';
+                })
+                .catch(error => {
+                    progressBar.style.width = '0%';
+                    progressPercentage.textContent = '0%';
+                    errorMessage.textContent = "Failed to fetch source code. Please ensure the URL is valid.";
+                });
+        }
+
+        function copyToClipboard() {
+            const sourceCodeArea = document.getElementById('sourceCodeArea');
+            if (sourceCodeArea.value === '') {
+                alert("No source code to copy!");
+                return;
+            }
+            sourceCodeArea.select();
+            document.execCommand('copy');
+            alert('Source code copied to clipboard!');
+        }
+
+        function downloadSourceCode() {
+            const sourceCode = document.getElementById('sourceCodeArea').value;
+            if (!sourceCode) {
+                alert("Nothing to download.");
+                return;
+            }
+            const blob = new Blob([sourceCode], { type: "text/plain" });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "source_code.txt";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
